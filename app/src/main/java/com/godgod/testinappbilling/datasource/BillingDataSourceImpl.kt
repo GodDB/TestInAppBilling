@@ -5,10 +5,7 @@ import android.content.Context
 import android.util.Log
 import com.android.billingclient.api.*
 import com.godgod.testinappbilling.di.MainCoroutineScope
-import com.godgod.testinappbilling.model.BillingState
-import com.godgod.testinappbilling.model.InAppItem
-import com.godgod.testinappbilling.model.SkuDetailsList
-import com.godgod.testinappbilling.model.SubItem
+import com.godgod.testinappbilling.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,19 +22,27 @@ class BillingDataSourceImpl @Inject constructor(
 ) : BillingDataSource {
     companion object {
         /** 아이템 조회를 위한 key값 */
-        private val INAPP_ITEM_ID_LIST = listOf(InAppItem.POINT_1000.itemKey, InAppItem.POINT_10000.itemKey)
-        private val SUB_ITEM_ID_LIST = listOf(SubItem.ONE_MONTH.itemKey, SubItem.THREE_MONTH.itemKey)
+        private val INAPP_ITEM_ID_LIST =
+            listOf(InAppItem.POINT_1000.itemKey, InAppItem.POINT_10000.itemKey)
+        private val SUB_ITEM_ID_LIST =
+            listOf(SubItem.ONE_MONTH.itemKey, SubItem.THREE_MONTH.itemKey)
     }
-    private val billingStateFlow: MutableSharedFlow<BillingState> = MutableSharedFlow(extraBufferCapacity = 10)
+
+    private val billingStateFlow: MutableSharedFlow<BillingState> =
+        MutableSharedFlow(extraBufferCapacity = 10)
+
     override fun fetchBillingState(): Flow<BillingState> = billingStateFlow.asSharedFlow()
+
     /** 아이템 조회의 결과물 */
     private val inAppItemList: SkuDetailsList = SkuDetailsList()
     private val subscriptionItemList: SkuDetailsList = SkuDetailsList()
+
     /** billing api setup listener */
     private val billingStateListener = object : BillingClientStateListener {
         override fun onBillingServiceDisconnected() {
             handleBillingServiceDisconnected()
         }
+
         override fun onBillingSetupFinished(billingResult: BillingResult) {
             handleBillingSetupFinished(billingResult)
             // 결제 Pending된 아이템들이 Purchase 상태로 변경되었을 때, 구매 처리를 한다.
@@ -46,9 +51,13 @@ class BillingDataSourceImpl @Inject constructor(
             }
         }
     }
+
     /** billing ui를 통해 구매 처리 뜨면 반응하는 리스너 */
     private val purchaseUpdateListener = object : PurchasesUpdatedListener {
-        override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
+        override fun onPurchasesUpdated(
+            billingResult: BillingResult,
+            purchases: MutableList<Purchase>?
+        ) {
             handlePurchasesUpdated(billingResult, purchases)
         }
     }
@@ -57,25 +66,34 @@ class BillingDataSourceImpl @Inject constructor(
         .setListener(purchaseUpdateListener)
         .build()
         .apply { startConnection(billingStateListener) }
+
+
     /** 사용자가 구매한 아이템을 조회한다. debugging 용도*/
     override suspend fun refreshPurchasedItems() {
         Log.d("godgod", "인앱 결제 리스트 ${queryInAppPurchaseItems().purchasesList}")
         Log.d("godgod", "구독 결제 리스트 ${querySubscriptionPurchaseItems().purchasesList}")
     }
+
+
     /** 인앱 아이템 구매를 위한 billing ui를 띄운다. */
     override fun purchaseItem(item: InAppItem, getActivity: () -> Activity) {
         val skuDetails = inAppItemList.findSkuDetailsByItemKey(itemKey = item.itemKey) ?: return
         showBillingUI(skuDetails, getActivity)
     }
+
+
     /** 구독 아이템 구매를 위한 billing ui를 띄운다. */
     override fun purchaseItem(item: SubItem, getActivity: () -> Activity) {
         if (!billingClient.isSupportSubscription()) {
             billingStateFlow.tryEmit(BillingState.FeatureNotSupported)
             return
         }
-        val skuDetails = subscriptionItemList.findSkuDetailsByItemKey(itemKey = item.itemKey) ?: return
+        val skuDetails =
+            subscriptionItemList.findSkuDetailsByItemKey(itemKey = item.itemKey) ?: return
         showBillingUI(skuDetails, getActivity)
     }
+
+
     /** billing ui를 띄운다. */
     private fun showBillingUI(skuDetails: SkuDetails, getActivity: () -> Activity) {
         val flowParams = BillingFlowParams.newBuilder()
@@ -83,6 +101,7 @@ class BillingDataSourceImpl @Inject constructor(
             .build()
         billingClient.launchBillingFlow(getActivity(), flowParams)
     }
+
     /**
      *  purchasedUpdate listener의 이벤트를 처리한다.
      *
@@ -99,13 +118,17 @@ class BillingDataSourceImpl @Inject constructor(
      *  SERVICE_UNAVAILABLE - 네트워크 연결 안됨
      *  USER_CANCELLED - 유저가 결제 종료함
      */
-    private fun handlePurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
+    private fun handlePurchasesUpdated(
+        billingResult: BillingResult,
+        purchases: MutableList<Purchase>?
+    ) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
             purchases?.let { handlePurchases(purchases) }
         } else {
             billingStateFlow.tryEmit(BillingState.byBillingResponseCode(billingResult.responseCode))
         }
     }
+
     /** billing state listener의 billingSetupFinished 이벤트를 처리한다 */
     private fun handleBillingSetupFinished(billingResult: BillingResult) {
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) return
@@ -121,18 +144,22 @@ class BillingDataSourceImpl @Inject constructor(
             }
         }
     }
+
     /** billing state listener의 billingServiceDisconnected 이벤트를 처리한다 */
     private fun handleBillingServiceDisconnected() {
         billingClient.startConnection(billingStateListener)
     }
+
     /** 사용자의 playstore 계정으로 구매한 인앱 아이템을 조회한다 */
     private suspend fun queryInAppPurchaseItems(): PurchasesResult {
         return billingClient.queryPurchasesAsync(BillingClient.SkuType.INAPP)
     }
+
     /** 사용자의 playstore 계정으로 구매한 구독 아이템을 조회한다. */
     private suspend fun querySubscriptionPurchaseItems(): PurchasesResult {
         return billingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS)
     }
+
     /** 사용자의 playstore 계정으로 구매 가능한 인앱 아이템을 조회한다. */
     private suspend fun queryInAppItems(): SkuDetailsResult {
         val params = SkuDetailsParams.newBuilder()
@@ -143,6 +170,7 @@ class BillingDataSourceImpl @Inject constructor(
             billingClient.querySkuDetails(params)
         }
     }
+
     /** 사용자의 playstore 계정으로 구매 가능한 구독 아이템을 조회한다. */
     private suspend fun querySubscriptionItems(): SkuDetailsResult {
         val params = SkuDetailsParams.newBuilder()
@@ -153,6 +181,7 @@ class BillingDataSourceImpl @Inject constructor(
             billingClient.querySkuDetails(params)
         }
     }
+
     /** 사용자가 google store ui를 통해 한 구매들을 확인하여 구매 상태를 내려준다. */
     private fun handlePurchases(purchases: List<Purchase>) {
         defaultScope.launch {
@@ -160,27 +189,33 @@ class BillingDataSourceImpl @Inject constructor(
                 if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
                     billingStateFlow.tryEmit(BillingState.PendingPurchase)
                 } else {
-                    billingStateFlow.tryEmit(BillingState.PurchaseNotApproved(purchase))
+                    billingStateFlow.tryEmit(BillingState.PurchaseProcessing(purchase))
                 }
             }
         }
     }
+
     /** 서버에서 검증을 마친 아이템에 대해서 결제 처리를 한다. */
-    override suspend fun approvePurchaseItem(purchase: Purchase) {
-        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
-            billingStateFlow.tryEmit(BillingState.PendingPurchase)
-            return
-        }
-        if (purchase.isAutoRenewing) {
-            approveSubPurchase(purchase)
-        } else {
-            approveInAppPurchase(purchase)
+    override suspend fun approvePurchaseItem(state: PurchaseVerifyState) {
+        when (state) {
+            is PurchaseVerifyState.Success -> {
+                if (state.itemType == BillingClient.SkuType.INAPP) approveInAppPurchase(state.purchaseToken) else approveSubPurchase(
+                    state.purchaseToken
+                )
+            }
+            is PurchaseVerifyState.NetworkError -> {
+                billingStateFlow.tryEmit(BillingState.ServiceUnAvailable)
+            }
+            is PurchaseVerifyState.VerifyError -> {
+                billingStateFlow.tryEmit(BillingState.UnVerifiedPurchase)
+            }
         }
     }
+
     /** inapp 결제의 아이템에 대해서 구매 승낙 처리를 한다. */
-    private suspend fun approveInAppPurchase(purchase: Purchase) {
+    private suspend fun approveInAppPurchase(purchaseToken: String) {
         val consumeParams = ConsumeParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
+            .setPurchaseToken(purchaseToken)
             .build()
         val result = withContext(Dispatchers.IO) {
             billingClient.consumePurchase(consumeParams)
@@ -190,10 +225,11 @@ class BillingDataSourceImpl @Inject constructor(
         }
         refreshPurchasedItems()
     }
+
     /** subscription 결제의 아이템에 대해서 구매 승낙 처리를 한다. */
-    private suspend fun approveSubPurchase(purchase: Purchase) {
+    private suspend fun approveSubPurchase(purchaseToken: String) {
         val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
+            .setPurchaseToken(purchaseToken)
             .build()
         val result = withContext(Dispatchers.IO) {
             billingClient.acknowledgePurchase(acknowledgePurchaseParams)

@@ -4,7 +4,6 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.Purchase
 
 sealed class BillingState {
-    object Default : BillingState() // 아무 상태도 아님 - 최초의 상태
     object BillingUnavailable : BillingState() // Billing API v4 버전이 지원되지 않음
     object DeveloperError : BillingState() // 올바르지 않은 Parameter를 던짐 [SkuDetails]
     object Error : BillingState()  // api 에러
@@ -16,10 +15,13 @@ sealed class BillingState {
     object ServiceTimeOut : BillingState() // google play response time Out
     object ServiceUnAvailable : BillingState() // 네트워크 연결 안됨
     object UserCancelled : BillingState() // 유저가 결제 종료함
-    // 이 3개에 대해선 converter를 거치지 않고 사용한다.
-    data class PurchaseNotApproved(val purchase : Purchase) : BillingState() // 유저가 구매 했으나 구매 승인이 안이뤄짐
+
+    // 이 4개에 대해선 converter를 거치지 않고 사용한다.
+    data class PurchaseProcessing(val purchase : Purchase) : BillingState() // 유저가 구매 했으나 구매 승인이 안이뤄짐 - 구매 처리 중
     object SuccessPurchase : BillingState() // 유저가 구매 후, 승인까지 완료
     object PendingPurchase : BillingState() // 결제 유보
+    object UnVerifiedPurchase : BillingState() // 승인되지 않은 구매 - 서버에서 검증 실패
+
     companion object {
         fun byBillingResponseCode(@BillingClient.BillingResponseCode responseCode : Int) : BillingState {
             return when(responseCode) {

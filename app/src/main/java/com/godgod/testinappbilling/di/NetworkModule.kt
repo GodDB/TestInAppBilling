@@ -2,7 +2,10 @@ package com.godgod.testinappbilling.di
 
 import android.util.Log.DEBUG
 import com.android.billingclient.BuildConfig
+import com.godgod.testinappbilling.model.PurchaseVerifyState
+import com.godgod.testinappbilling.util.PurchaseVerifyGsonAdapter
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,9 +19,13 @@ import java.util.concurrent.TimeUnit
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private val BASE_URL by lazy { "https://n3ms3jhii1.execute-api.ap-northeast-2.amazonaws.com/dev/"  }
+    private val BASE_URL = "https://us-central1-testinapppurchase1.cloudfunctions.net/"
     @Provides
-    fun provideGson(): Gson = Gson()
+    fun provideGson(): Gson = GsonBuilder()
+        .registerTypeAdapter(PurchaseVerifyState::class.java, PurchaseVerifyGsonAdapter())
+        .create()
+
+
     @Provides
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()

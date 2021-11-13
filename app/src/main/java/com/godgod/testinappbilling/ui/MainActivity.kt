@@ -1,6 +1,5 @@
 package com.godgod.testinappbilling.ui
 
-import android.app.ProgressDialog.show
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -43,11 +42,10 @@ class MainActivity : AppCompatActivity() {
     private fun observeLivedata() {
         viewModel.billingState.observe(this) {
             val msg = when(it) {
-                is BillingState.Default -> ""
                 is BillingState.PendingPurchase -> "결제 보류"
                 is BillingState.BillingUnavailable -> "지원 불가"
                 is BillingState.ItemNotOwned -> "소유하지 않은 아이템"
-                is BillingState.PurchaseNotApproved -> "구매 진행 중"
+                is BillingState.PurchaseProcessing -> "구매 진행 중"
                 is BillingState.UserCancelled -> "취소"
                 is BillingState.ServiceUnAvailable -> "서비스 불가"
                 is BillingState.ServiceTimeOut -> "타임 아웃"
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity() {
                 is BillingState.DeveloperError -> "잘못된 input"
                 is BillingState.Error -> "에러 발생"
                 is BillingState.SuccessPurchase -> "구매 성공"
+                is BillingState.UnVerifiedPurchase -> "구매 처리가 되지 않음"
             }
             showMessage(msg)
         }
