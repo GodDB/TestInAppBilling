@@ -25,8 +25,8 @@ class BillingDataSourceImpl @Inject constructor(
 ) : BillingDataSource {
     companion object {
         /** 아이템 조회를 위한 key값 */
-        private val INAPP_ITEM_ID_LIST = listOf(InAppItem.POINT_600.itemKey, InAppItem.POINT_10000.itemKey)
-        private val SUB_ITEM_ID_LIST = listOf(SubItem.ONE_MONTH_EMAIL.itemKey, SubItem.ONE_MONTH_GOOGLE.itemKey, SubItem.ONE_MONTH_KAKAO.itemKey)
+        private val INAPP_ITEM_ID_LIST = listOf(InAppItem.POINT_1000.itemKey, InAppItem.POINT_10000.itemKey)
+        private val SUB_ITEM_ID_LIST = listOf(SubItem.ONE_MONTH.itemKey, SubItem.THREE_MONTH.itemKey)
     }
     private val billingStateFlow: MutableSharedFlow<BillingState> = MutableSharedFlow(extraBufferCapacity = 10)
     override fun fetchBillingState(): Flow<BillingState> = billingStateFlow.asSharedFlow()

@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import com.godgod.testinappbilling.R
 import com.godgod.testinappbilling.model.BillingState
+import com.godgod.testinappbilling.model.InAppItem
+import com.godgod.testinappbilling.model.SubItem
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,19 +22,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.btn_1_month_sub).setOnClickListener {
-
+            viewModel.purchaseItem(SubItem.ONE_MONTH) { this }
         }
 
         findViewById<Button>(R.id.btn_3_month_sub).setOnClickListener {
-
+            viewModel.purchaseItem(SubItem.THREE_MONTH) { this }
         }
 
         findViewById<Button>(R.id.btn_point_1000).setOnClickListener {
-
+            viewModel.purchaseItem(InAppItem.POINT_1000) { this }
         }
 
         findViewById<Button>(R.id.btn_point_10000).setOnClickListener {
-
+            viewModel.purchaseItem(InAppItem.POINT_10000) { this }
         }
 
         observeLivedata()

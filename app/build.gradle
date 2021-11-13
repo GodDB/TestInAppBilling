@@ -5,6 +5,10 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdk 31
 
@@ -12,15 +16,25 @@ android {
         applicationId "com.godgod.testinappbilling"
         minSdk 21
         targetSdk 31
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storePassword keystoreProperties['storePassword']
+            keyPassword keystoreProperties['keyPassword']
+            keyAlias keystoreProperties['keyAlias']
+            storeFile file(keystoreProperties['storeFile'])
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -46,8 +60,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-core-ktx:$lifecycle_extensions_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_extensions_version"
 
-
-    
     // Hilt
     def hilt_version = "2.37"
     implementation "com.google.dagger:hilt-android:$hilt_version"
