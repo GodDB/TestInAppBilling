@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context=".ui.MainActivity">
+
+    <Button
+        android:id="@+id/btn_1_month_sub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="구독 결제 1달 이용권" />
+
+    <Button
+        android:id="@+id/btn_3_month_sub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="구독 결제 3달 이용권" />
+
+    <Button
+        android:id="@+id/btn_point_1000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="포인트 1000 구매" />
+
+    <Button
+        android:id="@+id/btn_point_10000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="포인트 10000 구매" />
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>
